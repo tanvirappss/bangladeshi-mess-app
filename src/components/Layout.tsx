@@ -78,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   className={`mx-3 mb-2 flex items-center px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      : 'text-neutral-800 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent'
                   }`}
                 >
                   <Icon className=\"mr-3 h-5 w-5\" />
