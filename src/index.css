@@ -104,3 +104,14 @@
 .sidebar nav > a > div {
   opacity: 1;
 }
+
+/* Explicit base colors for sidebar items in both themes */
+.sidebar nav > a > div {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.dark .sidebar nav > a > div {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+/* Keep hover text colors controlled by existing Tailwind classes */
