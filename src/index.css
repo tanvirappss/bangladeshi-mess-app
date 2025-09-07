@@ -86,6 +86,7 @@
   visibility: visible !important;
   display: inline !important;
   white-space: nowrap;
+  color: inherit; /* ensure default visibility in both themes */
 }
 
 .sidebar .bengali,
