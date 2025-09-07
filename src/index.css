@@ -107,11 +107,19 @@
 
 /* Explicit base colors for sidebar items in both themes */
 .sidebar nav > a > div {
-  color: hsl(var(--card-foreground)) !important;
+  color: hsl(var(--foreground));
 }
 
 .dark .sidebar nav > a > div {
-  color: hsl(var(--card-foreground)) !important;
+  color: hsl(var(--foreground));
+}
+
+/* Ensure label spans inherit the visible color and remain visible */
+.sidebar nav > a > div > span {
+  color: inherit;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline !important;
 }
 
 /* Keep hover text colors controlled by existing Tailwind classes */
