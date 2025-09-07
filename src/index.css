@@ -79,3 +79,17 @@
   left: 0;
   z-index: -1;
 }
+
+/* Sidebar label overrides: keep text visible even on hover/minimized */
+.sidebar nav span {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline !important;
+  white-space: nowrap;
+}
+
+.sidebar .bengali,
+.sidebar .english {
+  opacity: 1 !important;
+  visibility: visible !important;
+}

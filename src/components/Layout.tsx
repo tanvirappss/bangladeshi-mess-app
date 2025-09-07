@@ -52,20 +52,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className=\"flex h-screen bg-background\">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <motion.div 
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className=\"w-64 bg-card border-r border-border shadow-lg relative z-10\"
+        className="sidebar w-64 bg-card border-r border-border shadow-lg relative z-10"
       >
-        <div className=\"p-6\">
+        <div className="p-6">
           <h1 className={`text-2xl font-bold text-primary ${language === 'bn' ? 'bengali' : 'english'}`}>
             {language === 'bn' ? 'মেস ম্যানেজমেন্ট' : 'Mess Management'}
           </h1>
         </div>
         
-        <nav className=\"mt-6\">
+        <nav className="mt-6">
           {navigation.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.href
@@ -81,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'text-neutral-800 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent'
                   }`}
                 >
-                  <Icon className=\"mr-3 h-5 w-5\" />
+                  <Icon className="mr-3 h-5 w-5" />
                   <span className={language === 'bn' ? 'bengali' : 'english'}>
                     {item.name}
                   </span>
@@ -92,33 +92,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
         
         {/* Theme and Language Controls */}
-        <div className=\"absolute bottom-4 left-4 right-4 space-y-2\">
-          <div className=\"flex gap-2\">
+        <div className="absolute bottom-4 left-4 right-4 space-y-2">
+          <div className="flex gap-2">
             <Button
-              variant=\"outline\"
-              size=\"sm\"
+              variant="outline"
+              size="sm"
               onClick={toggleTheme}
-              className=\"flex-1\"
+              className="flex-1"
             >
-              {theme === 'light' ? <Moon className=\"h-4 w-4\" /> : <Sun className=\"h-4 w-4\" />}
+              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </Button>
             <Button
-              variant=\"outline\"
-              size=\"sm\"
+              variant="outline"
+              size="sm"
               onClick={toggleLanguage}
-              className=\"flex-1\"
+              className="flex-1"
             >
-              <Languages className=\"h-4 w-4 mr-1\" />
+              <Languages className="h-4 w-4 mr-1" />
               {language.toUpperCase()}
             </Button>
           </div>
           <Button
-            variant=\"destructive\"
-            size=\"sm\"
+            variant="destructive"
+            size="sm"
             onClick={handleLogout}
-            className=\"w-full\"
+            className="w-full"
           >
-            <LogOut className=\"mr-2 h-4 w-4\" />
+            <LogOut className="mr-2 h-4 w-4" />
             <span className={language === 'bn' ? 'bengali' : 'english'}>
               {t('nav.logout')}
             </span>
@@ -127,8 +127,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </motion.div>
       
       {/* Main Content */}
-      <div className=\"flex-1 flex flex-col overflow-hidden\">
-        <main className=\"flex-1 overflow-y-auto p-6 relative z-10\">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -142,4 +142,4 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   )
 }
 
-export default Layout"
+export default Layout
