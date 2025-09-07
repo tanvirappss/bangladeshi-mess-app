@@ -123,3 +123,21 @@
 }
 
 /* Keep hover text colors controlled by existing Tailwind classes */
+
+/* Sidebar items: force yellow text in all states */
+.sidebar nav > a > div,
+.sidebar nav > a > div > span {
+  color: #facc15 !important; /* Tailwind yellow-400 */
+}
+
+/* Keep hover background effects from Tailwind; ensure text stays yellow */
+.sidebar nav > a > div:hover,
+.sidebar nav > a > div:hover > span {
+  color: #facc15 !important;
+}
+
+/* Active state should also keep yellow text unless intentionally overridden */
+.sidebar nav > a > div.bg-primary,
+.sidebar nav > a > div.bg-primary > span {
+  color: #facc15 !important;
+}
