@@ -94,3 +94,13 @@
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* Base sidebar text color and visibility */
+.sidebar {
+  color: hsl(var(--card-foreground));
+}
+
+.sidebar a,
+.sidebar nav > a > div {
+  opacity: 1;
+}
