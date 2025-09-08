@@ -141,3 +141,28 @@
 .sidebar nav > a > div.bg-primary > span {
   color: #facc15 !important;
 }
+
+/* Force visible yellow text for new [data-sidebar] structure */
+[data-sidebar="sidebar"] [data-sidebar="group-label"],
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a > div,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a > div > span {
+  color: #facc15 !important; /* yellow-400 */
+}
+
+/* Keep hover/focus backgrounds but maintain yellow text */
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a:hover,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a:hover > div,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a:hover > div > span,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a[data-active="true"],
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a[data-active="true"] > div,
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a[data-active="true"] > div > span {
+  color: #facc15 !important;
+}
+
+/* Ensure labels are not hidden by opacity utilities */
+[data-sidebar="sidebar"] [data-sidebar="group-label"],
+[data-sidebar="sidebar"] [data-sidebar="menu"] [data-sidebar="menu-item"] a > div > span {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
