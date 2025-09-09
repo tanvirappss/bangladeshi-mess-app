@@ -65,6 +65,7 @@ function App() {
               <Toaster position="top-right" />
               
               <Routes>
+                {/* Public routes */}
                 <Route 
                   path="/login" 
                   element={!session ? <Login /> : <Navigate to="/dashboard" />} 
@@ -73,6 +74,14 @@ function App() {
                   path="/" 
                   element={session ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
                 />
+
+                {/* Legacy/role routes redirected to dashboard */}
+                <Route path="/role" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/roles" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/select-role" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/choose-role" element={<Navigate to="/dashboard" replace />} />
+
+                {/* Authenticated routes */}
                 <Route 
                   path="/*" 
                   element={
