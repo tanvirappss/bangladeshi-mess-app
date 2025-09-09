@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Users, DollarSign, ShoppingCart, UtensilsCrossed, TrendingUp, Calculator } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
+import toast from 'react-hot-toast'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog'
 import { useLanguage } from '../contexts/LanguageContext'
 import { supabase, type Member, type Deposit, type Bazar, type Meal } from '../lib/supabase'
 import { getCurrentMonth, formatCurrency, calculateMessBalance } from '../lib/utils'
@@ -17,6 +21,12 @@ const Dashboard: React.FC = () => {
   const [meals, setMeals] = useState<Meal[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth())
+
+  // Local mess/role context
+  const [messId, setMessId] = useState<string | null>(() => localStorage.getItem('mess_id'))
+  const [role, setRole] = useState<string | null>(() => localStorage.getItem('role'))
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false)
+  const [joinCode, setJoinCode] = useState('')
 
   // Fetch all data
   const fetchAllData = async () => {
@@ -47,6 +57,35 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchAllData()
   }, [])
+
+  // Role/Mess actions (frontend-only context preservation)
+  const generateMessId = () => {
+    return Math.random().toString(36).slice(2, 8).toUpperCase()
+  }
+
+  const handleCreateMess = () => {
+    const newMessId = generateMessId()
+    localStorage.setItem('mess_id', newMessId)
+    localStorage.setItem('role', 'manager')
+    setMessId(newMessId)
+    setRole('manager')
+    toast.success(language === 'bn' ? 'নতুন মেস তৈরি হয়েছে!' : 'Mess created!')
+  }
+
+  const handleJoinMess = () => {
+    const code = joinCode.trim().toUpperCase()
+    if (!code) {
+      toast.error(language === 'bn' ? 'মেস আইডি দিন' : 'Please enter a mess ID')
+      return
+    }
+    localStorage.setItem('mess_id', code)
+    localStorage.setItem('role', 'member')
+    setMessId(code)
+    setRole('member')
+    setJoinDialogOpen(false)
+    setJoinCode('')
+    toast.success(language === 'bn' ? 'মেসে যোগ হয়েছে!' : 'Joined mess!')
+  }
 
   // Calculate monthly statistics
   const monthlyStats = calculateMessBalance(members, deposits, bazarEntries, meals, selectedMonth)
@@ -125,6 +164,59 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {!messId && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className={language === 'bn' ? 'bengali' : 'english'}>
+                {language === 'bn' ? 'আপনি কী করতে চান?' : 'What would you like to do?'}
+              </CardTitle>
+              <CardDescription className={language === 'bn' ? 'bengali' : 'english'}>
+                {language === 'bn'
+                  ? 'লগইন করার পর সরাসরি একটি বিকল্প নির্বাচন করুন'
+                  : 'Choose an option directly after login — no extra steps'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={handleCreateMess} className="w-full sm:w-auto">
+                  {language === 'bn' ? 'মেস তৈরি করুন (ম্যানেজার)' : 'Create a Mess (Manager)'}
+                </Button>
+                <Button variant="outline" onClick={() => setJoinDialogOpen(true)} className="w-full sm:w-auto">
+                  {language === 'bn' ? 'মেসে যোগ দিন (মেম্বার)' : 'Join a Mess (Member)'}
+                </Button>
+              </div>
+              {role && messId && (
+                <p className={`mt-3 text-sm text-muted-foreground ${language === 'bn' ? 'bengali' : 'english'}`}>
+                  {language === 'bn' ? 'বর্তমান ভূমিকা' : 'Current role'}: {role.toUpperCase()} • ID: {messId}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className={language === 'bn' ? 'bengali' : 'english'}>
+                  {language === 'bn' ? 'মেস আইডি দিন' : 'Enter Mess ID'}
+                </DialogTitle>
+                <DialogDescription className={language === 'bn' ? 'bengali' : 'english'}>
+                  {language === 'bn' ? 'আপনার বন্ধু যে আইডি শেয়ার করেছে তা দিন' : 'Enter the ID shared with you'}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex gap-2">
+                <Input value={joinCode} onChange={e => setJoinCode(e.target.value)} placeholder={language === 'bn' ? 'উদাহরণ: ABC123' : 'e.g., ABC123'} />
+                <Button onClick={handleJoinMess}>{language === 'bn' ? 'যোগ দিন' : 'Join'}</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </motion.div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
