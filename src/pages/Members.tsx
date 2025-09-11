@@ -18,12 +18,19 @@ const Members: React.FC = () => {
   const [editingMember, setEditingMember] = useState<Member | null>(null)
   const [formData, setFormData] = useState({ name: '', phone: '' })
 
+  const messId = localStorage.getItem('mess_id')
+
   // Fetch members
   const fetchMembers = async () => {
+    if (!messId) {
+      setLoading(false)
+      return
+    }
     try {
       const { data, error } = await supabase
         .from('members')
         .select('*')
+        .eq('mess_id', messId)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -37,6 +44,10 @@ const Members: React.FC = () => {
 
   // Add or update member
   const handleSaveMember = async () => {
+    if (!messId) {
+        toast.error('You must be in a mess to add members.')
+        return
+    }
     try {
       if (!formData.name.trim()) {
         toast.error(language === 'bn' ? 'নাম আবশ্যক' : 'Name is required')
@@ -61,7 +72,8 @@ const Members: React.FC = () => {
           .from('members')
           .insert([{
             name: formData.name.trim(),
-            phone: formData.phone.trim() || null
+            phone: formData.phone.trim() || null,
+            mess_id: messId
           }])
 
         if (error) throw error

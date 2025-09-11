@@ -11,10 +11,14 @@ import { Input } from '../components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog'
 import { useLanguage } from '../contexts/LanguageContext'
 import { supabase, type Member, type Deposit, type Bazar, type Meal } from '../lib/supabase'
+import { createMess, joinMess } from '../lib/mess'
 import { getCurrentMonth, formatCurrency, calculateMessBalance } from '../lib/utils'
+import { type User } from '@supabase/supabase-js'
+import { Link } from 'react-router-dom'
 
 const Dashboard: React.FC = () => {
   const { t, language } = useLanguage()
+  const [user, setUser] = useState<User | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [deposits, setDeposits] = useState<Deposit[]>([])
   const [bazarEntries, setBazarEntries] = useState<Bazar[]>([])
@@ -28,63 +32,108 @@ const Dashboard: React.FC = () => {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false)
   const [joinCode, setJoinCode] = useState('')
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setUser(session.user)
+      }
+    }
+    fetchUser()
+  }, [])
+
   // Fetch all data
-  const fetchAllData = async () => {
+  const fetchAllData = async (messId: string) => {
+    setLoading(true)
     try {
-      const [membersRes, depositsRes, bazarRes, mealsRes] = await Promise.all([
-        supabase.from('members').select('*'),
-        supabase.from('deposits').select('*'),
-        supabase.from('bazar').select('*'),
-        supabase.from('meals').select('*')
+      // 1. Fetch members of the current mess
+      const { data: membersData, error: membersError } = await supabase
+        .from('members')
+        .select('*')
+        .eq('mess_id', messId)
+
+      if (membersError) throw membersError
+      setMembers(membersData || [])
+
+      if (!membersData || membersData.length === 0) {
+        setDeposits([])
+        setBazarEntries([])
+        setMeals([])
+        return
+      }
+
+      const memberIds = membersData.map(m => m.id)
+
+      // 2. Fetch related data using member IDs
+      const [depositsRes, bazarRes, mealsRes] = await Promise.all([
+        supabase.from('deposits').select('*, members(*)').in('member_id', memberIds),
+        supabase.from('bazar').select('*, members(*)').in('member_id', memberIds),
+        supabase.from('meals').select('*, members(*)').in('member_id', memberIds)
       ])
 
-      if (membersRes.error) throw membersRes.error
       if (depositsRes.error) throw depositsRes.error
       if (bazarRes.error) throw bazarRes.error
       if (mealsRes.error) throw mealsRes.error
 
-      setMembers(membersRes.data || [])
       setDeposits(depositsRes.data || [])
       setBazarEntries(bazarRes.data || [])
       setMeals(mealsRes.data || [])
+
     } catch (error: any) {
       console.error('Error fetching data:', error)
+      toast.error('Failed to fetch mess data.')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchAllData()
-  }, [])
+    if (messId) {
+      fetchAllData(messId)
+    } else {
+      setLoading(false)
+    }
+  }, [messId])
 
-  // Role/Mess actions (frontend-only context preservation)
-  const generateMessId = () => {
-    return Math.random().toString(36).slice(2, 8).toUpperCase()
+  const handleCreateMess = async () => {
+    if (!user) {
+      toast.error('You must be logged in to create a mess.')
+      return
+    }
+    try {
+      const newMess = await createMess(user.id, 'My New Mess')
+      localStorage.setItem('mess_id', newMess.id)
+      localStorage.setItem('role', 'manager')
+      setMessId(newMess.id)
+      setRole('manager')
+      toast.success(language === 'bn' ? 'নতুন মেস তৈরি হয়েছে!' : `Mess created with ID: ${newMess.id}`)
+    } catch (error: any) {
+      toast.error(error.message)
+    }
   }
 
-  const handleCreateMess = () => {
-    const newMessId = generateMessId()
-    localStorage.setItem('mess_id', newMessId)
-    localStorage.setItem('role', 'manager')
-    setMessId(newMessId)
-    setRole('manager')
-    toast.success(language === 'bn' ? 'নতুন মেস তৈরি হয়েছে!' : 'Mess created!')
-  }
-
-  const handleJoinMess = () => {
-    const code = joinCode.trim().toUpperCase()
+  const handleJoinMess = async () => {
+    if (!user) {
+      toast.error('You must be logged in to join a mess.')
+      return
+    }
+    const code = joinCode.trim()
     if (!code) {
       toast.error(language === 'bn' ? 'মেস আইডি দিন' : 'Please enter a mess ID')
       return
     }
-    localStorage.setItem('mess_id', code)
-    localStorage.setItem('role', 'member')
-    setMessId(code)
-    setRole('member')
-    setJoinDialogOpen(false)
-    setJoinCode('')
-    toast.success(language === 'bn' ? 'মেসে যোগ হয়েছে!' : 'Joined mess!')
+    try {
+      const joinedMess = await joinMess(user.id, code)
+      localStorage.setItem('mess_id', joinedMess.id)
+      localStorage.setItem('role', 'member')
+      setMessId(joinedMess.id)
+      setRole('member')
+      setJoinDialogOpen(false)
+      setJoinCode('')
+      toast.success(language === 'bn' ? 'মেসে যোগ হয়েছে!' : 'Joined mess!')
+    } catch (error: any) {
+      toast.error(error.message)
+    }
   }
 
   // Calculate monthly statistics
@@ -235,23 +284,30 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
         
-        {availableMonths.length > 0 && (
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableMonths.map(month => (
-                <SelectItem key={month} value={month}>
-                  {new Date(month + '-01').toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { 
-                    year: 'numeric', 
-                    month: 'long' 
-                  })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <div className="flex items-center gap-4">
+          {messId && (
+            <Link to="/mess-dashboard">
+              <Button variant="outline">Mess Dashboard</Button>
+            </Link>
+          )}
+          {availableMonths.length > 0 && (
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableMonths.map(month => (
+                  <SelectItem key={month} value={month}>
+                    {new Date(month + '-01').toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', {
+                      year: 'numeric',
+                      month: 'long'
+                    })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </motion.div>
 
       {/* Statistics Cards */}

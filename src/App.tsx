@@ -16,6 +16,7 @@ import Deposits from './pages/Deposits'
 import BazarPage from './pages/Bazar'
 import Meals from './pages/Meals'
 import Reports from './pages/Reports'
+import MessDashboard from './pages/MessDashboard'
 import Layout from './components/Layout'
 import ParticleBackground from './components/ParticleBackground'
 
@@ -94,6 +95,7 @@ function App() {
                           <Route path="/bazar" element={<BazarPage />} />
                           <Route path="/meals" element={<Meals />} />
                           <Route path="/reports" element={<Reports />} />
+                          <Route path="/mess-dashboard" element={<MessDashboard />} />
                         </Routes>
                       </Layout>
                     ) : (

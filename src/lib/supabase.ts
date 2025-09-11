@@ -17,6 +17,7 @@ export interface Member {
   name: string
   phone?: string
   created_at: string
+  mess_id: string
 }
 
 export interface Deposit {
@@ -39,7 +40,7 @@ export interface Bazar {
 }
 
 export interface Meal {
-  id: string
+  id:string
   member_id: string
   date: string
   lunch: number
@@ -48,7 +49,16 @@ export interface Meal {
   members?: Member
 }
 
-// Database setup function
+export { type Mess, type MessMember } from './mess'
+
+/**
+ * Sets up the initial database schema for members, deposits, bazar, and meals.
+ * IMPORTANT: This function depends on the 'messes' table. You must run `setupMessTables` from `src/lib/mess.ts` *before* running this function.
+ *
+ * Note: This setup uses permissive RLS policies for demonstration purposes.
+ * For a production environment, you should implement stricter policies
+ * that scope data access to the user's mess.
+ */
 export const setupDatabase = async () => {
   try {
     // Create members table
@@ -58,7 +68,8 @@ export const setupDatabase = async () => {
           id uuid primary key default gen_random_uuid(),
           name text not null,
           phone text,
-          created_at timestamp default now()
+          created_at timestamp default now(),
+          mess_id uuid references messes(id) on delete cascade
         );
       `
     })
